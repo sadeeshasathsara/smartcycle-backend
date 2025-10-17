@@ -1,5 +1,6 @@
 package com.smartcycle.smartcycleapplication.config;
 
+import com.smartcycle.smartcycleapplication.models.*;
 import com.smartcycle.smartcycleapplication.repositories.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -7,12 +8,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.smartcycle.smartcycleapplication.models.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 public class ApplicationConfig {
@@ -29,9 +33,17 @@ public class ApplicationConfig {
                 .map(user -> new org.springframework.security.core.userdetails.User(
                         user.getEmail(),
                         user.getPassword(),
-                        new ArrayList<>()
+                        List.of(new SimpleGrantedAuthority("ROLE_" + determineRole(user).toUpperCase())) // Load the role
                 ))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
+    }
+
+    private String determineRole(User user) {
+        if (user instanceof Admin) return "ADMIN";
+        if (user instanceof CollectionPersonnel) return "PERSONNEL";
+        if (user instanceof Driver) return "DRIVER";
+        if (user instanceof Resident) return "RESIDENT";
+        return "USER"; // Fallback
     }
 
     @Bean
