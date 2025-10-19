@@ -132,17 +132,21 @@ public class CollectionService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<ActiveRequestDTO> getActiveRequestForUser(String userEmail) {
+    public List<ActiveRequestDTO> getActiveRequestsForUser(String userEmail) { // Renamed method for clarity
         Resident resident = residentRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalStateException("Resident not found for the logged-in user."));
 
         // Define the list of "active" statuses
         List<Status> activeStatuses = List.of(Status.SCHEDULED, Status.ASSIGNED, Status.EN_ROUTE);
 
-        // Find the next upcoming active request
-        return collectionRequestRepository
-                .findFirstByResidentIdAndStatusInOrderByScheduleDateAsc(resident.getId(), activeStatuses)
-                .map(this::mapToActiveRequestDTO); // Convert to DTO if found
+        // CHANGE: Use the updated repository method that returns a List
+        List<CollectionRequest> activeRequests = collectionRequestRepository
+                .findByResidentIdAndStatusInOrderByScheduleDateAsc(resident.getId(), activeStatuses);
+
+        // CHANGE: Map the entire list to DTOs
+        return activeRequests.stream()
+                .map(this::mapToActiveRequestDTO)
+                .collect(Collectors.toList());
     }
 
     private ActiveRequestDTO mapToActiveRequestDTO(CollectionRequest request) {

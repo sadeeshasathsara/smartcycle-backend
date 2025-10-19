@@ -65,13 +65,14 @@ public class CollectionController {
     }
 
     @GetMapping("/status/active")
-    public ResponseEntity<?> getActiveRequestStatus(@AuthenticationPrincipal UserDetails userDetails) {
+    // CHANGE: Return type is now ResponseEntity<List<ActiveRequestDTO>>
+    public ResponseEntity<List<ActiveRequestDTO>> getActiveRequestStatus(@AuthenticationPrincipal UserDetails userDetails) {
         String userEmail = userDetails.getUsername();
-        Optional<ActiveRequestDTO> activeRequest = collectionService.getActiveRequestForUser(userEmail);
+        // CHANGE: Call the renamed service method which returns a List
+        List<ActiveRequestDTO> activeRequests = collectionService.getActiveRequestsForUser(userEmail);
 
-        // If an active request is found, return it. Otherwise, return a 204 No Content status.
-        return activeRequest.<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.noContent().build());
+        // Return the list directly (it will be empty if none are found, which is fine)
+        return ResponseEntity.ok(activeRequests);
     }
 
     @PatchMapping("/{requestId}/complete")

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import com.smartcycle.smartcycleapplication.models.Status;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional; // Make sure to import Optional
 
@@ -22,5 +23,11 @@ public interface CollectionRequestRepository extends JpaRepository<CollectionReq
     List<CollectionRequest> findByResidentIdAndStatusAndPaymentStatus(Long residentId, Status status, String paymentStatus);
     Optional<CollectionRequest> findFirstByResidentIdAndStatusInOrderByScheduleDateAsc(Long residentId, List<Status> statuses);
     List<CollectionRequest> findByCollectionScheduleId(Long scheduleId);
+    List<CollectionRequest> findByResidentIdAndStatusInOrderByScheduleDateAsc(Long residentId, List<Status> statuses);
+    List<CollectionRequest> findByStatusAndScheduleDateBetweenAndCollectionScheduleIsNull(
+            Status status,
+            LocalDateTime startTime,
+            LocalDateTime endTime
+    );
 
 }

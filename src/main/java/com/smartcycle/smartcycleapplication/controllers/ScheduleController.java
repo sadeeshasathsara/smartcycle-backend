@@ -1,5 +1,6 @@
 package com.smartcycle.smartcycleapplication.controllers;
 
+import com.smartcycle.smartcycleapplication.dtos.CollectionHistoryDTO;
 import com.smartcycle.smartcycleapplication.dtos.CreateScheduleRequestDTO;
 import com.smartcycle.smartcycleapplication.dtos.ScheduleListDTO;
 import com.smartcycle.smartcycleapplication.dtos.ScheduleStartResponseDTO;
@@ -57,5 +58,11 @@ public class ScheduleController {
     public ResponseEntity<List<ScheduleListDTO>> getAllSchedules() {
         List<ScheduleListDTO> schedules = scheduleService.getAllSchedules();
         return ResponseEntity.ok(schedules);
+    }
+
+    @GetMapping("/{scheduleId}/requests")
+    public ResponseEntity<List<CollectionHistoryDTO>> getRequestsForSchedule(@PathVariable Long scheduleId) {
+        List<CollectionHistoryDTO> requests = scheduleService.getRequestsForSchedule(scheduleId);
+        return ResponseEntity.ok(requests);
     }
 }

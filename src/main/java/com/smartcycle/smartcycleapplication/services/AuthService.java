@@ -92,6 +92,12 @@ public class AuthService {
         // cookie.setSecure(true); // Should be enabled in production with HTTPS
         response.addCookie(cookie);
 
+        response.setHeader("Set-Cookie",
+                String.format("jwt=%s; Path=/; HttpOnly; Max-Age=86400; SameSite=None%s",
+                        jwtToken,
+                        /* append Secure if needed */
+                        false ? "" : "; Secure"));
+
         UserResponseDTO userResponse = mapToUserResponseDTO(user);
 
         return Map.of("token", jwtToken, "user", userResponse);
