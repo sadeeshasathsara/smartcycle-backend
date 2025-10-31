@@ -1,13 +1,13 @@
 # SmartCycle Backend Application
 
+<div  align="center">
+<img width="300" height="300" alt="spring-boot-icon" src="https://github.com/user-attachments/assets/c0371dd2-d845-422f-b301-e9b71ff2f34c" />
+</div>
+
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen)
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0+-blue)
 ![Maven](https://img.shields.io/badge/Maven-3.6+-red)
-
-<div  align="center">
-<img width="300" height="300" alt="spring-boot-icon" src="https://github.com/user-attachments/assets/c0371dd2-d845-422f-b301-e9b71ff2f34c" />
-</div>
 
 A comprehensive waste management and recycling collection system built with Spring Boot. SmartCycle enables residents to schedule waste pickups, track collection requests, manage payments, and earn recycling rebates while providing administrative tools for collection personnel management and route optimization.
 
