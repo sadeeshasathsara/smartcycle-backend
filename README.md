@@ -503,10 +503,10 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ### Contributors
 
-- **Sadeesha Sathsara** - [@sadeeshasathsara](https://github.com/sadeeshasathsara) - Project Lead & Architecture
-- **Eric Devon** - [@Eric-Devon](https://github.com/Eric-Devon) - Backend Developer
-- **Ehara Perera** - [@EHARAPERERA](https://github.com/EHARAPERERA) - Backend Developer
-- **Vageesha Udawatta** - [@vageeshau](https://github.com/vageeshau) - Backend Developer
+- **Sadeesha Sathsara** - [@sadeeshasathsara](https://github.com/sadeeshasathsara) - Project Lead & Full Stack Developer
+- **Eric Devon** - [@Eric-Devon](https://github.com/Eric-Devon) - Full Stack Developer
+- **Ehara Perera** - [@EHARAPERERA](https://github.com/EHARAPERERA) - Full Stack Developer
+- **Vageesha Udawatta** - [@vageeshau](https://github.com/vageeshau) - Full Stack Developer
 
 ## 📧 Contact
 
