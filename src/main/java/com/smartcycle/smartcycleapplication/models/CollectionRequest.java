@@ -38,4 +38,8 @@ public class CollectionRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id")
     private CollectionSchedule collectionSchedule;
+
+    public LocalDateTime getScheduledDate() {
+        return null;
+    }
 }

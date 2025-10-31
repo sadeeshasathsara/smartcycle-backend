@@ -1,5 +1,6 @@
 package com.smartcycle.smartcycleapplication.services;
 
+import com.smartcycle.smartcycleapplication.dtos.CollectionHistoryDTO;
 import com.smartcycle.smartcycleapplication.dtos.CreateScheduleRequestDTO;
 import com.smartcycle.smartcycleapplication.dtos.ScheduleListDTO;
 import com.smartcycle.smartcycleapplication.dtos.ScheduleStartResponseDTO;
@@ -64,30 +65,60 @@ public class ScheduleService {
 
     @Transactional
     public CollectionSchedule createSchedule(CreateScheduleRequestDTO dto, String personnelEmail) {
-        // 1. Find the personnel creating the schedule
         CollectionPersonnel personnel = personnelRepository.findByEmail(personnelEmail)
                 .orElseThrow(() -> new IllegalStateException("Collection Personnel not found."));
-
-        // 2. Find the assigned driver and vehicle
         Driver driver = driverRepository.findById(dto.getDriverId())
-                .orElseThrow(() -> new IllegalArgumentException("Driver with ID " + dto.getDriverId() + " not found."));
+                .orElseThrow(() -> new IllegalArgumentException("Driver not found."));
         Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId())
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle with ID " + dto.getVehicleId() + " not found."));
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found."));
 
-        // 3. Final validation: Check for resource availability to prevent race conditions
         validateResourceAvailability(dto.getScheduledDateTime(), dto.getDriverId(), dto.getVehicleId());
 
-        // 4. Create and populate the new schedule entity
         CollectionSchedule newSchedule = new CollectionSchedule();
         newSchedule.setCreatedBy(personnel);
         newSchedule.setDriver(driver);
         newSchedule.setVehicle(vehicle);
         newSchedule.setScheduledTime(dto.getScheduledDateTime());
         newSchedule.setStatus(ScheduleStatus.PENDING);
-        // Note: For this simple schedule, we are not linking individual requests yet.
-        // A more complex system might link existing 'SCHEDULED' requests here.
+        // Location would typically be derived from the assigned requests or a defined route
 
-        return scheduleRepository.save(newSchedule);
+        // Save the schedule *first* to get its ID
+        CollectionSchedule savedSchedule = scheduleRepository.save(newSchedule);
+
+        // --- NEW: Assign matching requests ---
+        assignMatchingRequestsToSchedule(savedSchedule);
+        // --- End of New Logic ---
+
+        // Return the schedule (now potentially updated with requests, though the list might not be immediately populated depending on JPA state)
+        return savedSchedule; // Or fetch it again if needed: scheduleRepository.findById(savedSchedule.getId()).get()
+    }
+
+    // --- NEW HELPER METHOD ---
+    private void assignMatchingRequestsToSchedule(CollectionSchedule schedule) {
+        // Define the time window for matching requests (e.g., +/- 2 hours around the schedule time)
+        LocalDateTime startTime = schedule.getScheduledTime().minusHours(2);
+        LocalDateTime endTime = schedule.getScheduledTime().plusHours(2);
+
+        // Find SCHEDULED requests within the time window that haven't been assigned yet
+        List<CollectionRequest> matchingRequests = requestRepository.findByStatusAndScheduleDateBetweenAndCollectionScheduleIsNull(
+                Status.SCHEDULED,
+                startTime,
+                endTime
+        );
+
+        // TODO: Add location filtering here if necessary. This is complex and might involve
+        // comparing addresses, zip codes, or using geospatial queries if you store coordinates.
+
+        // Assign the found requests to the new schedule and update their status
+        for (CollectionRequest request : matchingRequests) {
+            request.setCollectionSchedule(schedule);
+            request.setStatus(Status.ASSIGNED);
+        }
+
+        // Save the updated requests
+        if (!matchingRequests.isEmpty()) {
+            requestRepository.saveAll(matchingRequests);
+        }
     }
 
     private void validateResourceAvailability(LocalDateTime dateTime, Long driverId, Long vehicleId) {
@@ -131,6 +162,37 @@ public class ScheduleService {
             dto.setCreatedBy(schedule.getCreatedBy().getName());
         }
 
+        return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CollectionHistoryDTO> getRequestsForSchedule(Long scheduleId) {
+        // 1. Check if the schedule exists (optional but good practice)
+        scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("Schedule with ID " + scheduleId + " not found."));
+
+        // 2. Fetch the requests linked to this schedule
+        List<CollectionRequest> requests = requestRepository.findByCollectionScheduleId(scheduleId);
+
+        // 3. Map them to the DTO for the response
+        return requests.stream()
+                .map(this::mapToCollectionHistoryDTO) // Use the existing mapper
+                .collect(Collectors.toList());
+    }
+
+    private CollectionHistoryDTO mapToCollectionHistoryDTO(CollectionRequest request) {
+        CollectionHistoryDTO dto = new CollectionHistoryDTO();
+        dto.setRequestId(request.getId());
+        dto.setWasteType(request.getWasteType());
+        dto.setQuantity(request.getQuantity());
+        dto.setStatus(request.getStatus());
+        dto.setScheduledDate(request.getScheduledDate());
+        return dto;
+    }
+
+    private CollectionHistoryDTO mapRequestToHistoryDTO(CollectionRequest request) {
+        CollectionHistoryDTO dto = new CollectionHistoryDTO();
+        // ... map fields ...
         return dto;
     }
 
